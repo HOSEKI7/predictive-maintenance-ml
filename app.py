@@ -8,7 +8,13 @@ from src.data_loader import load_processed
 from src.train_classifier import load_model as load_clf
 from src.train_anomaly import load_model as load_if
 
-st.set_page_config(page_title="Predictive Maintenance Dashboard", layout="wide")
+st.set_page_config(page_title="Predictive Maintenance Dashboard", page_icon="📊", layout="wide")
+
+st.markdown("""<style>
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap');
+html, body, [class*="css"] { font-family: 'Geist', sans-serif; }
+.metric-value { font-variant-numeric: tabular-nums; }
+</style>""", unsafe_allow_html=True)
 
 SENSOR_METADATA = {
     "air_temperature_k": {"label": "Air Temperature", "unit": "K"},
@@ -18,14 +24,14 @@ SENSOR_METADATA = {
     "tool_wear_min": {"label": "Tool Wear", "unit": "min"},
 }
 
-COLORS = {"green": "#2ecc71", "yellow": "#f1c40f", "red": "#e74c3c"}
+COLORS = {"green": "#409a6b", "yellow": "#c4902a", "red": "#b84646"}
 
 SENSOR_COLORS = {
-    "air_temperature_k": "#3498db",
-    "process_temperature_k": "#e74c3c",
-    "rotational_speed_rpm": "#2ecc71",
-    "torque_nm": "#9b59b6",
-    "tool_wear_min": "#f39c12",
+    "air_temperature_k": "#4a80b8",
+    "process_temperature_k": "#b85a5a",
+    "rotational_speed_rpm": "#4a8f6a",
+    "torque_nm": "#7a6bbf",
+    "tool_wear_min": "#b88a3a",
 }
 
 FEATURE_COLS = list(SENSOR_METADATA.keys()) + ["Type"]
