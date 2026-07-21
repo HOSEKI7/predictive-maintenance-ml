@@ -2,6 +2,9 @@
 
 End-to-end predictive maintenance system using the AI4I 2020 sensor dataset. Two-layer detection: **XGBoost** for failure classification + **Isolation Forest** for unsupervised anomaly detection, deployed as an interactive **Streamlit** dashboard.
 
+## Project Portfolio
+[Project Portfolio](https://hoseki7.github.io/predictive-maintenance-ml/)
+
 ## Live Demo
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://hoseki7-predictive-maintenance.streamlit.app/)
