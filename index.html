@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Predictive Maintenance - Failure Classification & Anomaly Detection</title>
+  <meta name="description" content="End-to-end predictive maintenance system using AI4I 2020 sensor data. XGBoost failure classification + Isolation Forest anomaly detection, deployed as an interactive Streamlit dashboard.">
+  <meta property="og:title" content="Predictive Maintenance - ML Portfolio Project">
+  <meta property="og:description" content="Two-layer detection for industrial sensor data. See live demo and code on GitHub.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @font-face {
+      font-family: 'Geist';
+      src: url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap');
+    }
+    body {
+      font-family: 'Geist', system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    code, .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+    .hero-glow {
+      background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(74, 128, 184, 0.15), transparent);
+    }
+    .card-glow {
+      background: radial-gradient(ellipse 100% 100% at 50% 100%, rgba(74, 128, 184, 0.05), transparent);
+    }
+    .metric-card {
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up {
+      animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .animate-fade-up { animation: none; opacity: 1; }
+      .metric-card:hover { transform: none; }
+    }
+  </style>
+</head>
+<body class="bg-[#0a0a0f] text-[#e2e4e9]">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.04] bg-[#0a0a0f]/80 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <span class="text-sm font-medium tracking-tight">Predictive Maintenance</span>
+      <div class="flex items-center gap-6">
+        <a href="https://github.com/HOSEKI/predictive-maintenance-ml" target="_blank" rel="noopener noreferrer" class="text-sm text-[#898ca0] hover:text-[#e2e4e9] transition-colors">GitHub</a>
+        <a href="https://YOUR-APP-NAME.streamlit.app" target="_blank" rel="noopener noreferrer" class="text-sm px-4 py-1.5 rounded-full bg-[#4a80b8] text-white hover:bg-[#5a90c8] transition-colors font-medium">Live Demo</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="min-h-[100dvh] hero-glow pt-28 pb-24 flex items-center">
+    <div class="max-w-6xl mx-auto px-6 w-full">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div class="animate-fade-up">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/[0.06] bg-white/[0.02] text-xs text-[#898ca0] mb-8">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#4a80b8]"></span>
+            Portfolio Project
+          </div>
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter leading-[1.05] text-white">
+            Predictive Maintenance<br>
+            <span class="text-[#898ca0]">Failure Classification</span>
+            <span class="text-[#4a80b8]"> &amp; Anomaly Detection</span>
+          </h1>
+          <p class="mt-6 text-lg text-[#898ca0] leading-relaxed max-w-[65ch]">
+            Two-layer detection system for industrial sensor data. An XGBoost classifier identifies known failure types while an Isolation Forest catches unseen anomaly patterns. Deployed as an interactive real-time dashboard.
+          </p>
+          <div class="flex flex-wrap gap-4 mt-8">
+            <a href="https://YOUR-APP-NAME.streamlit.app" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#4a80b8] text-white font-medium hover:bg-[#5a90c8] transition-colors">
+              View Live Demo
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </a>
+            <a href="https://github.com/HOSEKI/predictive-maintenance-ml" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/[0.1] text-[#e2e4e9] font-medium hover:bg-white/[0.04] transition-colors">
+              View Source
+            </a>
+          </div>
+        </div>
+        <div class="animate-fade-up delay-2 hidden lg:block">
+          <div class="relative aspect-[4/3] rounded-2xl border border-white/[0.06] bg-gradient-to-br from-[#12121a] to-[#1a1a2e] overflow-hidden">
+            <div class="absolute inset-0 flex items-center justify-center p-8">
+              <div class="w-full space-y-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-4 h-4 rounded-full bg-[#3b8c5e]"></div>
+                  <div class="h-2.5 flex-1 rounded-full bg-white/[0.06]"><div class="h-full w-3/4 rounded-full bg-white/[0.08]"></div></div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-4 h-4 rounded-full bg-[#b84646]"></div>
+                  <div class="h-2.5 flex-1 rounded-full bg-white/[0.06]"><div class="h-full w-1/4 rounded-full bg-[#b84646]/30"></div></div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-4 h-4 rounded-full bg-[#c4902a]"></div>
+                  <div class="h-2.5 flex-1 rounded-full bg-white/[0.06]"><div class="h-full w-1/2 rounded-full bg-[#c4902a]/30"></div></div>
+                </div>
+                <div class="border-t border-white/[0.06] pt-4 mt-6">
+                  <div class="grid grid-cols-3 gap-3">
+                    <div class="rounded-lg bg-white/[0.03] p-3 text-center">
+                      <div class="text-xs text-[#898ca0]">Normal</div>
+                      <div class="text-lg font-bold text-[#3b8c5e]">92.1%</div>
+                    </div>
+                    <div class="rounded-lg bg-white/[0.03] p-3 text-center">
+                      <div class="text-xs text-[#898ca0]">Anomaly</div>
+                      <div class="text-lg font-bold text-[#c4902a]">4.2%</div>
+                    </div>
+                    <div class="rounded-lg bg-white/[0.03] p-3 text-center">
+                      <div class="text-xs text-[#898ca0]">Failure</div>
+                      <div class="text-lg font-bold text-[#b84646]">3.7%</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex gap-1 pt-2">
+                  <div class="h-16 flex-1 rounded-sm bg-gradient-to-t from-[#4a80b8]/40 to-transparent"></div>
+                  <div class="h-24 flex-1 rounded-sm bg-gradient-to-t from-[#4a80b8]/60 to-transparent"></div>
+                  <div class="h-12 flex-1 rounded-sm bg-gradient-to-t from-[#4a80b8]/30 to-transparent"></div>
+                  <div class="h-20 flex-1 rounded-sm bg-gradient-to-t from-[#4a80b8]/50 to-transparent"></div>
+                  <div class="h-8 flex-1 rounded-sm bg-gradient-to-t from-[#4a80b8]/20 to-transparent"></div>
+                  <div class="h-28 flex-1 rounded-sm bg-gradient-to-t from-[#4a80b8]/70 to-transparent"></div>
+                  <div class="h-16 flex-1 rounded-sm bg-gradient-to-t from-[#4a80b8]/40 to-transparent"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="py-24 border-t border-white/[0.04]">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="max-w-[65ch]">
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-white">Industrial equipment failures cost time and money</h2>
+        <p class="mt-6 text-lg text-[#898ca0] leading-relaxed">
+          Unplanned downtime in manufacturing and industrial facilities leads to production losses and expensive emergency repairs. This project simulates a real-time predictive maintenance system that monitors sensor readings and provides early warnings before failures occur.
+        </p>
+        <p class="mt-4 text-lg text-[#898ca0] leading-relaxed">
+          Using the AI4I 2020 dataset (10,000 rows of simulated industrial sensor data with a ~3.4% failure rate), the system combines supervised classification with unsupervised anomaly detection to catch both known and unknown failure patterns.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+        <div class="rounded-xl border border-white/[0.06] bg-[#12121a] p-6 metric-card">
+          <div class="text-3xl font-bold text-white tabular">10,000</div>
+          <div class="text-sm text-[#898ca0] mt-1">Sensor readings</div>
+        </div>
+        <div class="rounded-xl border border-white/[0.06] bg-[#12121a] p-6 metric-card">
+          <div class="text-3xl font-bold text-white tabular">5</div>
+          <div class="text-sm text-[#898ca0] mt-1">Sensor features</div>
+        </div>
+        <div class="rounded-xl border border-white/[0.06] bg-[#12121a] p-6 metric-card">
+          <div class="text-3xl font-bold text-white tabular">3.4%</div>
+          <div class="text-sm text-[#898ca0] mt-1">Failure rate (imbalanced)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD PREVIEW -->
+  <section class="py-24 border-t border-white/[0.04]">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-white">Interactive real-time dashboard</h2>
+        <p class="mt-4 text-lg text-[#898ca0] leading-relaxed">
+          Watch sensor data stream in real time with live risk assessment. Every reading is classified and scored by both models simultaneously.
+        </p>
+      </div>
+      <div class="aspect-video rounded-2xl border border-white/[0.06] bg-[#12121a] overflow-hidden flex items-center justify-center">
+        <div class="text-center p-8">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-[#4a80b8]/10 border border-[#4a80b8]/20 flex items-center justify-center mb-4">
+            <svg class="w-8 h-8 text-[#4a80b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <p class="text-[#898ca0] text-sm">Dashboard screenshot</p>
+          <p class="text-[#555870] text-xs mt-1">Run <code class="text-[#898ca0]">streamlit run app.py</code> and capture your own</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section class="py-24 border-t border-white/[0.04]">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-white">Two-layer detection architecture</h2>
+        <p class="mt-4 text-lg text-[#898ca0] leading-relaxed">
+          Combining supervised and unsupervised learning for broader coverage against equipment failures.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="rounded-xl border border-white/[0.06] bg-gradient-to-br from-[#12121a] to-[#181828] p-8 metric-card">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-[#4a80b8]/10 border border-[#4a80b8]/20 flex items-center justify-center">
+              <svg class="w-5 h-5 text-[#4a80b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-white">XGBoost Classifier</h3>
+              <p class="text-sm text-[#898ca0]">Supervised classification</p>
+            </div>
+          </div>
+          <p class="text-[#898ca0] text-sm leading-relaxed">
+            Trained on labeled failure data with <code class="text-[#e2e4e9] text-xs bg-white/[0.04] px-1.5 py-0.5 rounded">scale_pos_weight</code> to handle severe class imbalance (~3.4% failure rate). Predicts whether a machine will fail and which failure type.
+          </p>
+          <div class="mt-4 flex items-center gap-2 text-xs text-[#555870]">
+            <span class="w-2 h-2 rounded-full bg-[#4a80b8]"></span>
+            Recall: 78% &middot; F1: 0.75
+          </div>
+        </div>
+        <div class="rounded-xl border border-white/[0.06] bg-gradient-to-br from-[#12121a] to-[#1a1828] p-8 metric-card">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-[#3b8c5e]/10 border border-[#3b8c5e]/20 flex items-center justify-center">
+              <svg class="w-5 h-5 text-[#3b8c5e]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-white">Isolation Forest</h3>
+              <p class="text-sm text-[#898ca0]">Unsupervised anomaly detection</p>
+            </div>
+          </div>
+          <p class="text-[#898ca0] text-sm leading-relaxed">
+            Trained exclusively on normal operating data. Detects patterns outside any previously labeled failure type, catching novel anomalies that the classifier was never trained to recognize.
+          </p>
+          <div class="mt-4 flex items-center gap-2 text-xs text-[#555870]">
+            <span class="w-2 h-2 rounded-full bg-[#3b8c5e]"></span>
+            Trained on 100% normal data
+          </div>
+        </div>
+      </div>
+      <!-- RISK LOGIC -->
+      <div class="mt-10 rounded-xl border border-white/[0.06] bg-[#12121a] p-8">
+        <h3 class="text-lg font-semibold text-white mb-6">Combined risk logic</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="flex items-start gap-4 p-4 rounded-lg bg-white/[0.02]">
+            <div class="w-6 h-6 rounded-full bg-[#3b8c5e] shrink-0 mt-0.5"></div>
+            <div>
+              <div class="font-medium text-white">Normal</div>
+              <p class="text-sm text-[#898ca0]">Both models agree the reading is normal</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4 p-4 rounded-lg bg-white/[0.02]">
+            <div class="w-6 h-6 rounded-full bg-[#c4902a] shrink-0 mt-0.5"></div>
+            <div>
+              <div class="font-medium text-white">Anomaly</div>
+              <p class="text-sm text-[#898ca0]">Classifier says normal, but anomaly score exceeds threshold</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4 p-4 rounded-lg bg-white/[0.02]">
+            <div class="w-6 h-6 rounded-full bg-[#b84646] shrink-0 mt-0.5"></div>
+            <div>
+              <div class="font-medium text-white">Failure</div>
+              <p class="text-sm text-[#898ca0]">XGBoost predicts an imminent failure</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="py-24 border-t border-white/[0.04]">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-white">Model performance</h2>
+        <p class="mt-4 text-lg text-[#898ca0] leading-relaxed">
+          Evaluated on a stratified test set of 2,000 samples. Recall is prioritized over precision because a missed failure costs more than a false alarm.
+        </p>
+      </div>
+
+      <!-- Metrics grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+        <div class="rounded-xl border border-white/[0.06] bg-[#12121a] p-6 text-center metric-card">
+          <div class="text-3xl font-bold text-white tabular">98%</div>
+          <div class="text-xs text-[#898ca0] mt-1">Overall accuracy</div>
+        </div>
+        <div class="rounded-xl border border-white/[0.06] bg-[#12121a] p-6 text-center metric-card">
+          <div class="text-3xl font-bold text-white tabular">78%</div>
+          <div class="text-xs text-[#898ca0] mt-1">Failure recall</div>
+        </div>
+        <div class="rounded-xl border border-white/[0.06] bg-[#12121a] p-6 text-center metric-card">
+          <div class="text-3xl font-bold text-white tabular">0.75</div>
+          <div class="text-xs text-[#898ca0] mt-1">Failure F1-score</div>
+        </div>
+        <div class="rounded-xl border border-white/[0.06] bg-[#12121a] p-6 text-center metric-card">
+          <div class="text-3xl font-bold text-white tabular">72%</div>
+          <div class="text-xs text-[#898ca0] mt-1">Failure precision</div>
+        </div>
+      </div>
+
+      <!-- Confusion matrix -->
+      <div class="rounded-xl border border-white/[0.06] bg-[#12121a] p-8">
+        <h3 class="text-lg font-semibold text-white mb-4">Confusion matrix</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div>
+            <img src="reports/confusion_matrix.png" alt="Confusion matrix showing XGBoost classifier performance on test set" class="rounded-lg w-full max-w-sm">
+          </div>
+          <div>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
+                <span class="text-sm text-[#898ca0]">True normal predicted normal</span>
+                <span class="font-bold text-white tabular">1,911</span>
+              </div>
+              <div class="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
+                <span class="text-sm text-[#898ca0]">False alarms (normal predicted failure)</span>
+                <span class="font-bold text-[#c4902a] tabular">21</span>
+              </div>
+              <div class="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
+                <span class="text-sm text-[#898ca0]">Missed failures (failure predicted normal)</span>
+                <span class="font-bold text-[#c4902a] tabular">15</span>
+              </div>
+              <div class="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
+                <span class="text-sm text-[#898ca0]">True failure predicted failure</span>
+                <span class="font-bold text-[#3b8c5e] tabular">53</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section class="py-24 border-t border-white/[0.04]">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-white">Tech stack</h2>
+        <p class="mt-4 text-lg text-[#898ca0] leading-relaxed">
+          Built entirely with open-source tools. No proprietary frameworks or paid services.
+        </p>
+      </div>
+      <div class="flex flex-wrap justify-center gap-3">
+        <span class="px-4 py-2 rounded-full border border-white/[0.06] bg-white/[0.02] text-sm text-[#e2e4e9]">Python 3.13</span>
+        <span class="px-4 py-2 rounded-full border border-white/[0.06] bg-white/[0.02] text-sm text-[#e2e4e9]">scikit-learn</span>
+        <span class="px-4 py-2 rounded-full border border-white/[0.06] bg-white/[0.02] text-sm text-[#e2e4e9]">XGBoost</span>
+        <span class="px-4 py-2 rounded-full border border-white/[0.06] bg-white/[0.02] text-sm text-[#e2e4e9]">Streamlit</span>
+        <span class="px-4 py-2 rounded-full border border-white/[0.06] bg-white/[0.02] text-sm text-[#e2e4e9]">Plotly</span>
+        <span class="px-4 py-2 rounded-full border border-white/[0.06] bg-white/[0.02] text-sm text-[#e2e4e9]">Pandas</span>
+        <span class="px-4 py-2 rounded-full border border-white/[0.06] bg-white/[0.02] text-sm text-[#e2e4e9]">NumPy</span>
+        <span class="px-4 py-2 rounded-full border border-white/[0.06] bg-white/[0.02] text-sm text-[#e2e4e9]">Matplotlib</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-24 border-t border-white/[0.04]">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-white">Run it yourself</h2>
+      <p class="mt-4 text-lg text-[#898ca0]">
+        Clone the repo, install dependencies, and launch the dashboard in under 5 minutes.
+      </p>
+      <div class="mt-8 max-w-lg mx-auto">
+        <div class="rounded-xl border border-white/[0.06] bg-[#12121a] p-4 text-left">
+          <code class="text-sm text-[#e2e4e9] tabular">
+            git clone https://github.com/HOSEKI/predictive-maintenance-ml.git<br>
+            cd predictive-maintenance-ml<br>
+            pip install -r requirements.txt<br>
+            streamlit run app.py
+          </code>
+        </div>
+      </div>
+      <div class="flex flex-wrap justify-center gap-4 mt-8">
+        <a href="https://github.com/HOSEKI/predictive-maintenance-ml" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#4a80b8] text-white font-medium hover:bg-[#5a90c8] transition-colors">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/[0.04] py-8">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[#555870]">
+      <p>Built with Python, scikit-learn, XGBoost, Streamlit, and Plotly</p>
+      <div class="flex items-center gap-4">
+        <a href="https://github.com/HOSEKI/predictive-maintenance-ml" class="hover:text-[#898ca0] transition-colors">GitHub</a>
+        <span class="text-white/[0.06]">/</span>
+        <span>MIT License</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
