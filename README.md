@@ -4,7 +4,7 @@ End-to-end predictive maintenance system using the AI4I 2020 sensor dataset. Two
 
 ## Live Demo
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://YOUR-APP-NAME.streamlit.app)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://hoseki7-predictive-maintenance.streamlit.app/)
 
 ## Problem
 
